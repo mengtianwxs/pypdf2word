@@ -1,0 +1,27 @@
+hotkey
+w      -  clear and wirte  info to le_data
+ctrl_b -  insert '@\n' to te_info
+j      -  move down
+k      -  move up
+h      -  move left
+l      -  move right
+p      -  pre page
+n      -  next page
+ctrl_s -  save data to excel
+ctrl_d -  load img file (png,jpg)
+ctrl_x -  load pdf file
+ctrl_c -  convert file to word
+alt_c  -  nornal window
+alt_x  -  max window
+ctrl_e -  setfoucs to lal_main
+ctrl_t -  display hud info
+
+ctrl_q  -  start autocad application
+ctrl_r -  refresh te_info data
+ctrl_w -  wirte data to autocad
+
+
+comand
+'end'    -  end page
+'start'  -  start page
+'0'      -  start page
