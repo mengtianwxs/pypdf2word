@@ -14,12 +14,13 @@ from PIL import Image as PImage
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap, QTransform, QIcon
 from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QScrollArea, QGraphicsView
-from openpyxl import Workbook
+# from openpyxl import Workbook
 
 import pdf2image
 from baiduocr import BaiDuOcr
 
 import mtp2autocad
+import mt2opxl
 
 
 
@@ -65,7 +66,8 @@ class Ui_MainWindow(QMainWindow):
         self.img_name_orc_invoke='p2imtorci.jpg'
         self.ls_content=[]
         self.bdocr = BaiDuOcr()
-        self.mtdwg = None
+        # self.mtdwg = None
+        self.mt2xl=mt2opxl.p2openxl()
 
 
 
@@ -281,7 +283,7 @@ class Ui_MainWindow(QMainWindow):
         if (self.finame != ""):
             self.pixmap=QPixmap()
             self.pixmap.load(self.finame)
-            print(self.pixmap.width(),self.pixmap.height())
+            # print(self.pixmap.width(),self.pixmap.height())
             if(self.pixmap.width()<10 or self.pixmap.height()<10):
                 self.statusBar.showMessage("this image is too small to display, please select anthor ...")
             else:
@@ -358,13 +360,17 @@ class Ui_MainWindow(QMainWindow):
         # print(str)
         # print('infochange ',self.ls_content)
         self.listdata=self.ls_content
-        self.statusBar.showMessage("has refresh and changed data")
+        self.statusBar.showMessage("has refresh and changed data,if autocad has loaded Data ,please press ctrl_u to del it ...")
 
 
     def method_startcad(self):
         self.statusBar.showMessage("please write it is start autocad application and init ...")
         self.mtdwg = mtp2autocad.p2cad()
-        time.sleep(3)
+        time.sleep(5)
+        if(self.mtdwg.TestB_Lock()):
+            self.statusBar.showMessage('success start autocad ... ')
+            time.sleep(2)
+            self.statusBar.showMessage('Now you can press ctrl_r  ctrl_w to write the info to autocad ....')
 
 
     def method_ledatare(self):
@@ -492,46 +498,46 @@ class Ui_MainWindow(QMainWindow):
             self.statusBar.showMessage("has no pdf file selected , please select one pdf file ...")
 
     def method_save(self):
-        wb = Workbook()
-        ws = wb.active
-        ws['A1'] = "0"
-        for i in range(0, len(self.listdata)):
-            ws['A' + str(i + 1)] = self.listdata[i]
-        ti = time.time()
-        strs = self.fname
-        ix = strs.rfind('/')
-        newstr = strs[0:ix + 1]
-        wname = newstr + 'p' + str(ti)[:2] + '.xlsx'
-        wb.save(wname)
-        self.statusBar.showMessage("has saved the file in  " + wname)
+        self.mt2xl.saveData(self.listdata,'mt2pst.xlsx')
+        self.statusBar.showMessage("has saved the file in  mt2pst.xlsx")
+
+    def method_save_XLSXDATA(self):
+        # ctrl_q
+        self.mt2xl.saveData(self.listdata,'mt2cad.xlsx')
+        self.statusBar.showMessage("has saved the cad data with mt2cad.xlsx ")
+
+    def method_parseXLSXDATA2CADD(self):
+        self.statusBar.showMessage("load xlsx to convert cad ")
+        self.listdata=self.mt2xl.loadDataAndParse('mt2cad.xlsx')
+        print(self.listdata,'lst')
+        mt3dwg=mtp2autocad.p2cad()
+        mt3dwg.loadData(self.listdata)
+        dwginfo = mt3dwg.pasreAndDrawToAutoCad()
+        self.statusBar.showMessage(dwginfo)
+        self.statusBar.showMessage("success load xlsx and draw data to autocad ... ")
+
+        # wb=Workbook()
+
+    def method_delcadtxt(self):
+        self.statusBar.showMessage('ready to del autocad TXT...')
+        time.sleep(1)
+        mdwg=mtp2autocad.p2cad()
+        mdwg.loadData(self.listdata)
+        self.statusBar.showMessage(mdwg.delTXT())
+        # ctrl_u
 
     def method_dwgToSave(self):
         if(len(self.listdata)>0):
-            self.mtdwg.loadData(self.listdata)
-            dwginfo=self.mtdwg.pasreAndDrawToAutoCad()
+            mtdwg=mtp2autocad.p2cad()
+            mtdwg.loadData(self.listdata)
+            dwginfo=mtdwg.pasreAndDrawToAutoCad()
             self.statusBar.showMessage(dwginfo)
 
     def method_insertat(self):
         self.te_info.append("@\n")
         # pass
 
-    def keyReleaseEvent(self, e):
-        pass
-        # if e.key()==QtCore.Qt.Key_Space:
-        #     self.vdd = self.posy2 - self.posy1
-        #     self.hdd = self.posx2 - self.posx1
-        #     print(self.posy2,self.posy1,self.vdd)
-        #     print(self.posx2,self.posx1,self.hdd)
-        #
-        #     if (self.vdd > 0):
-        #         self.scrollArea.verticalScrollBar().setValue(self.vd + self.vdd)
-        #     else:
-        #         self.scrollArea.verticalScrollBar().setValue(self.vd - self.vdd)
-        #
-        #     if(self.hdd>0):
-        #         self.scrollArea.horizontalScrollBar().setValue(self.hd+self.hdd)
-        #     else:
-        #         self.scrollArea.horizontalScrollBar().setValue(self.hd-self.hdd)
+
 
     def method_displayHUD(self):
         fn = ''  # file name
@@ -544,12 +550,6 @@ class Ui_MainWindow(QMainWindow):
         self.hud_lt.setText("file name : " + self.ffname + '\n' + 'total page : ' + str(pn) + '\n' + 'index page : ' + str(ind))
 
     def keyPressEvent(self,e):
-
-        # if e.key() == QtCore.Qt.Key_Space:
-        #     print("space", self.scrollArea.verticalScrollBar().value())
-        #     # self.scrollArea.verticalScrollBar().setValue(500)
-        #     self.vd = self.scrollArea.verticalScrollBar().value()
-        #     self.hd = self.scrollArea.horizontalScrollBar().value()
 
         if e.key()==QtCore.Qt.Key_W:
             self.le_data.clear()
@@ -569,11 +569,26 @@ class Ui_MainWindow(QMainWindow):
             if QApplication.keyboardModifiers()==QtCore.Qt.ControlModifier:
                 self.method_loadimg()
                 # load img
+        # load img
+        if e.key() == QtCore.Qt.Key_U:
+            if QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
+                self.method_delcadtxt()
+                print('ctrl-u del')
+
+                # load img
 
         if e.key()==QtCore.Qt.Key_Q:
             if QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
                 print("start cad")
+                self.method_infochanged()
+                time.sleep(2)
+                self.method_save_XLSXDATA()
+                time.sleep(2)
                 self.method_startcad()
+
+        if e.key()==QtCore.Qt.Key_F:
+            if QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
+                self.method_parseXLSXDATA2CADD()
 
 
                 # load img

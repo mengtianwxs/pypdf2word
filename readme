@@ -20,6 +20,9 @@ ctrl_q  -  start autocad application
 ctrl_r -  refresh te_info data
 ctrl_w -  wirte data to autocad
 
+ctrl_f  -  link autocad and push xls data to autocad restore
+ctrl_u  -  del autocad text
+
 
 comand
 'end'    -  end page
