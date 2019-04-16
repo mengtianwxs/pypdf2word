@@ -1,0 +1,3 @@
+THEKE2BD_api_id = '15097359'
+THEKE2BD_api_key = "WTcXKQhIVP63NEbfsPQ2LnoL"
+THEKE2BD_secret_key = "pxTGAWq4QTCGRRsLUt4rS2BCgyk5Q9Ux"
